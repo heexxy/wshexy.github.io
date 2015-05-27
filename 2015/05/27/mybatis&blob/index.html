@@ -3,17 +3,26 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives | Hexy</title>
+  <title>解决Mybatis获取Blob类型字段乱码问题 | Hexy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hexy">
-<meta property="og:url" content="http://wshexy.github.io/archives/">
+  <meta name="description" content="Mybatis 在获取Blob类型的字段时会出现乱码。这里需要用到Mybatis的拦截器进行数据类型转换。首先需要知道的是BaseTypeHandler是Mybatis提供的基础转换类，该类实现了TypeHandler接口并且提供了很多实用的方法。因此，建议每个子一定转换类都继承BaseTypeHandler。废话不说，直接上代码：
+package com.he.webx.utils;
+
+impo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解决Mybatis获取Blob类型字段乱码问题">
+<meta property="og:url" content="http://wshexy.github.io/2015/05/27/mybatis&blob/">
 <meta property="og:site_name" content="Hexy">
-<meta property="og:description">
+<meta property="og:description" content="Mybatis 在获取Blob类型的字段时会出现乱码。这里需要用到Mybatis的拦截器进行数据类型转换。首先需要知道的是BaseTypeHandler是Mybatis提供的基础转换类，该类实现了TypeHandler接口并且提供了很多实用的方法。因此，建议每个子一定转换类都继承BaseTypeHandler。废话不说，直接上代码：
+package com.he.webx.utils;
+
+impo">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexy">
-<meta name="twitter:description">
+<meta name="twitter:title" content="解决Mybatis获取Blob类型字段乱码问题">
+<meta name="twitter:description" content="Mybatis 在获取Blob类型的字段时会出现乱码。这里需要用到Mybatis的拦截器进行数据类型转换。首先需要知道的是BaseTypeHandler是Mybatis提供的基础转换类，该类实现了TypeHandler接口并且提供了很多实用的方法。因此，建议每个子一定转换类都继承BaseTypeHandler。废话不说，直接上代码：
+package com.he.webx.utils;
+
+impo">
 
   
     <link rel="alternative" href="/atom.xml" title="Hexy" type="application/atom+xml">
@@ -191,9 +200,7 @@
 		</header>				
 	</div>
 </nav>
-      <div class="body-wrap">
-  
-    <article id="post-mybatis&amp;blob" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-mybatis&amp;blob" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
       <a href="/2015/05/27/mybatis&blob/" class="article-date">
@@ -209,12 +216,27 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/27/mybatis&blob/">解决Mybatis获取Blob类型字段乱码问题</a>
+    <h1 class="article-title" itemprop="name">
+      解决Mybatis获取Blob类型字段乱码问题
     </h1>
   
 
       </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mybatis-Blob/">Mybatis,Blob</a></li></ul>
+	</div>
+
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
+	</div>
+
+
+        <div class="clearfix"></div>
+      </div>
       
     
     <div class="article-entry" itemprop="articleBody">
@@ -297,161 +319,61 @@
       
     </div>
     
-    <div class="article-info article-info-index">
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mybatis-Blob/">Mybatis,Blob</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/05/27/setTimeout/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">setTimeout和setInterval</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
   
 </article>
 
 
-
-
-
-
-  
-    <article id="post-setTimeout" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/05/27/setTimeout/" class="article-date">
-  	<time datetime="2015-05-27T01:18:09.766Z" itemprop="datePublished">May 27 2015</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/27/setTimeout/">setTimeout和setInterval</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这2个函数用法和功能都很简单，无非就是<code>setTimeout(code,millisec)</code>，这里需要注意的就是code，无论是function还是函数名，都需要用<code>&quot;&quot;</code>,括起来，否则是不起作用的。如下 </p>
-<pre><code><span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript"> 
-    $(<span class="function"><span class="keyword">function</span><span class="params">()</span></span>{  
-        setTimeout(<span class="string">"function(){  
-            alert(1);  
-        }"</span>,<span class="number">1000</span>);
-        setInterval(<span class="string">"function(){  
-            alert(2);
-        }"</span>,<span class="number">2000</span>);
-    })
-</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
-</code></pre><p>需要将function用<code>&quot;&quot;</code>括起来。这是因为这2个函数的第一个参数接受的是字符串，最终是通过类似于<code>eval</code>机制执行。因此，<code>setTimeout</code>和<code>setInterval</code>的第一个参数需要传入的是字符串。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/setTimeout-setInterval/">setTimeout,setInterval</a></li></ul>
+<div class="share">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到：</span>
+		<a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+		<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
 	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
 
 
 
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="mybatis&amp;blob" data-title="解决Mybatis获取Blob类型字段乱码问题" data-url="http://wshexy.github.io/2015/05/27/mybatis&amp;blob/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
 
 
 
-  
-    <article id="post-Hexo" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/05/27/Hexo/" class="article-date">
-  	<time datetime="2015-05-27T01:18:09.764Z" itemprop="datePublished">May 27 2015</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/27/Hexo/">关于Hexo + Github 搭建个人博客</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p> 一直都想搭建一个个人博客，但是总是因为各种懒没有付出实际行动。偶尔发现了Hexo这个好东西，就自己搭建了一个。    </p>
-<p>具体如何搭建，网上都有很详细的<a href="http://cnfeat.com/2014/05/10/2014-05-11-how-to-build-a-blog" target="_blank" rel="external">教程</a>。我只说我遇到的一些问题。<br>1.第一步一定要安装<a href="http://nodejs.org/" target="_blank" rel="external">node.js</a>，最新版本就好。<br>2.在根据教程一步一步到最后，启动服务会发现自己的页面全是代码。这是因为缺少几个插件造成的，安装命令如下：<br>1.<code>npm install hexo-renderer-ejs</code><br>2.<code>npm install hexo-renderer-stylus</code><br>3.<code>npm install hexo-renderer-marked</code>  </p>
-<hr>
-<p>今天看了看，不需要这么麻烦<br>只需要在目录下执行：<code>npm install</code> 即可</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-  
-  
 </div>
       <footer id="footer">
   <div class="outer">
