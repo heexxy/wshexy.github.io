@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives: 2015 | 程序猿</title>
+  <title>Tag: Mybatis | 程序猿</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description">
 <meta property="og:type" content="website">
 <meta property="og:title" content="程序猿">
-<meta property="og:url" content="http://wshexy.github.io/archives/2015/">
+<meta property="og:url" content="http://wshexy.github.io/tags/Mybatis/">
 <meta property="og:site_name" content="程序猿">
 <meta property="og:description">
 <meta name="twitter:card" content="summary">
@@ -301,74 +301,6 @@
       
 	<div class="article-tag tagcloud">
 		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Blob/">Blob</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mybatis/">Mybatis</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-  
-    <article id="post-setTimeout" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/05/28/setTimeout/" class="article-date">
-  	<time datetime="2015-05-28T06:27:42.483Z" itemprop="datePublished">May 28 2015</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/28/setTimeout/">setTimeout和setInterval</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>这2个函数用法和功能都很简单，无非就是<code>setTimeout(code,millisec)</code>，这里需要注意的就是code，无论是function还是函数名，都需要用<code>&quot;&quot;</code>,括起来，否则是不起作用的。如下 </p>
-<pre><code><span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript"> 
-    $(<span class="function"><span class="keyword">function</span><span class="params">()</span></span>{  
-        setTimeout(<span class="string">"function(){  
-            alert(1);  
-        }"</span>,<span class="number">1000</span>);
-        setInterval(<span class="string">"function(){  
-            alert(2);
-        }"</span>,<span class="number">2000</span>);
-    })
-</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
-</code></pre><p>需要将function用<code>&quot;&quot;</code>括起来。这是因为这2个函数的第一个参数接受的是字符串，最终是通过类似于<code>eval</code>机制执行。因此，<code>setTimeout</code>和<code>setInterval</code>的第一个参数需要传入的是字符串。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/setInterval/">setInterval</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/setTimeout/">setTimeout</a></li></ul>
 	</div>
 
       
@@ -899,66 +831,6 @@ mysql.<span class="variable">password=</span><span class="number">123456</span>
       
 	<div class="article-category tagcloud">
 	<a class="article-category-link" href="/categories/technoligies/">technoligies</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-  
-    <article id="post-Hexo" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/05/27/Hexo/" class="article-date">
-  	<time datetime="2015-05-27T01:18:09.764Z" itemprop="datePublished">May 27 2015</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/27/Hexo/">关于Hexo + Github 搭建个人博客</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p> 一直都想搭建一个个人博客，但是总是因为各种懒没有付出实际行动。偶尔发现了Hexo这个好东西，就自己搭建了一个。    </p>
-<p>具体如何搭建，网上都有很详细的<a href="http://cnfeat.com/2014/05/10/2014-05-11-how-to-build-a-blog" target="_blank" rel="external">教程</a>。我只说我遇到的一些问题。<br>1.第一步一定要安装<a href="http://nodejs.org/" target="_blank" rel="external">node.js</a>，最新版本就好。<br>2.在根据教程一步一步到最后，启动服务会发现自己的页面全是代码。这是因为缺少几个插件造成的，安装命令如下：<br>1.<code>npm install hexo-renderer-ejs</code><br>2.<code>npm install hexo-renderer-stylus</code><br>3.<code>npm install hexo-renderer-marked</code>  </p>
-<hr>
-<p>今天看了看，不需要这么麻烦<br>只需要在目录下执行：<code>npm install</code> 即可</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
 	</div>
 
 
