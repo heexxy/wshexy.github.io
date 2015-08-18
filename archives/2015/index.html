@@ -113,7 +113,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Blob/" style="font-size: 10.00px;">Blob</a><a href="/tags/Maven/" style="font-size: 10.00px;">Maven</a><a href="/tags/Mybatis/" style="font-size: 20.00px;">Mybatis</a><a href="/tags/Mysql/" style="font-size: 10.00px;">Mysql</a><a href="/tags/SpringMvc/" style="font-size: 10.00px;">SpringMvc</a><a href="/tags/Velocity/" style="font-size: 10.00px;">Velocity</a><a href="/tags/hexo/" style="font-size: 10.00px;">hexo</a><a href="/tags/setInterval/" style="font-size: 10.00px;">setInterval</a><a href="/tags/setTimeout/" style="font-size: 10.00px;">setTimeout</a><a href="/tags/tomcat/" style="font-size: 10.00px;">tomcat</a>
+						<a href="/tags/Blob/" style="font-size: 10.00px;">Blob</a><a href="/tags/Maven/" style="font-size: 10.00px;">Maven</a><a href="/tags/Mybatis/" style="font-size: 20.00px;">Mybatis</a><a href="/tags/Mysql/" style="font-size: 10.00px;">Mysql</a><a href="/tags/SpringMvc/" style="font-size: 10.00px;">SpringMvc</a><a href="/tags/URL/" style="font-size: 10.00px;">URL</a><a href="/tags/Velocity/" style="font-size: 10.00px;">Velocity</a><a href="/tags/hexo/" style="font-size: 10.00px;">hexo</a><a href="/tags/setInterval/" style="font-size: 10.00px;">setInterval</a><a href="/tags/setTimeout/" style="font-size: 10.00px;">setTimeout</a><a href="/tags/tomcat/" style="font-size: 10.00px;">tomcat</a><a href="/tags/中文/" style="font-size: 10.00px;">中文</a><a href="/tags/乱码/" style="font-size: 10.00px;">乱码</a>
 					</div>
 				</section>
 				
@@ -192,6 +192,74 @@
 	</div>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-URL乱码" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/06/04/URL乱码/" class="article-date">
+  	<time datetime="2015-06-04T02:14:52.345Z" itemprop="datePublished">Jun 4 2015</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/04/URL乱码/">URL中的中文出现乱码的解决方法</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>很多情况下，我们需要在URL里传递中文参数。网上也很多解决方法，我在这里把解决方法列一下，并加上点自己遇到的问题。<br>这里主要是Java工程。</p>
+<p>需要做的是：<br>1.编码<br>2.解码</p>
+<h3 id="1-编码">1.编码</h3>
+<p>Java</p>
+<pre><code><span class="constant">String encodeStr</span> = java.net.URLEncoder.encode(<span class="string">"中文"</span>,<span class="string">"UTF-8"</span>);
+</code></pre><p>Javasript</p>
+<pre><code><span class="keyword">var</span> encodeStr = <span class="built_in">encodeURI</span>(<span class="built_in">encodeURI</span>(<span class="string">"中文"</span>));
+</code></pre><h3 id="2-解码">2.解码</h3>
+<p>如果URL为 <code>var url = http://xxxx.com?name=+encodeURI(encodeURI(&quot;中文&quot;))</code><br>Java</p>
+<pre><code>Stirng name=request.getParameter(<span class="string">"name"</span>);
+name=<span class="keyword">new</span> <span class="built_in">String</span>(name.getBytes(<span class="string">"ISO-8859-1"</span>),<span class="string">"UTF-8"</span>);<span class="comment">//方法1，推荐使用该方法</span>
+name=URLDecoder.decode(name,<span class="string">"utf-8"</span>);<span class="comment">//方法2，该方法有可能会解析不了</span>
+</code></pre>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/URL/">URL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/中文/">中文</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/乱码/">乱码</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
   
     <article id="post-mybatis&amp;blob" class="article article-type-post" itemscope itemprop="blogPost">
   
