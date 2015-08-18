@@ -93,6 +93,8 @@
 				        
 							<li><a href="/archives">所有文章</a></li>
 				        
+							<li><a href="/categories/mine">随意</a></li>
+				        
 						</ul>
 					</nav>
 					<nav class="header-nav">
@@ -100,7 +102,7 @@
 							
 								<a class="github" target="_blank" href="https://github.com/wshexy" title="github">github</a>
 					        
-								<a class="weibo" target="_blank" href="http://weibo.com/muuher" title="weibo">weibo</a>
+								<a class="weibo" target="_blank" href="http://weibo.com/wshexy" title="weibo">weibo</a>
 					        
 								<a class="rss" target="_blank" href="/#" title="rss">rss</a>
 					        
@@ -172,6 +174,8 @@
 		        
 					<li><a href="/archives">所有文章</a></li>
 		        
+					<li><a href="/categories/mine">随意</a></li>
+		        
 		        <div class="clearfix"></div>
 				</ul>
 			</nav>
@@ -180,7 +184,7 @@
 					
 						<a class="github" target="_blank" href="https://github.com/wshexy" title="github">github</a>
 			        
-						<a class="weibo" target="_blank" href="http://weibo.com/muuher" title="weibo">weibo</a>
+						<a class="weibo" target="_blank" href="http://weibo.com/wshexy" title="weibo">weibo</a>
 			        
 						<a class="rss" target="_blank" href="/#" title="rss">rss</a>
 			        
@@ -197,7 +201,7 @@
   
     <div class="article-meta">
       <a href="/2015/06/04/URL乱码/" class="article-date">
-  	<time datetime="2015-06-04T02:14:52.345Z" itemprop="datePublished">Jun 4 2015</time>
+  	<time datetime="2015-06-04T02:17:07.373Z" itemprop="datePublished">Jun 4 2015</time>
 </a>
     </div>
   
@@ -227,10 +231,10 @@
 </code></pre><p>Javasript</p>
 <pre><code><span class="keyword">var</span> encodeStr = <span class="built_in">encodeURI</span>(<span class="built_in">encodeURI</span>(<span class="string">"中文"</span>));
 </code></pre><h3 id="2-解码">2.解码</h3>
-<p>如果URL为 <code>var url = http://xxxx.com?name=+encodeURI(encodeURI(&quot;中文&quot;))</code><br>Java</p>
-<pre><code>Stirng name=request.getParameter(<span class="string">"name"</span>);
-name=<span class="keyword">new</span> <span class="built_in">String</span>(name.getBytes(<span class="string">"ISO-8859-1"</span>),<span class="string">"UTF-8"</span>);<span class="comment">//方法1，推荐使用该方法</span>
-name=URLDecoder.decode(name,<span class="string">"utf-8"</span>);<span class="comment">//方法2，该方法有可能会解析不了</span>
+<p>如果URL为 <code>var url = http://xxxx.com?name=+encodeURI(encodeURI(&quot;中文&quot;));</code><br>Java的解码方式有2种，如下：</p>
+<pre><code>Stirng name = request.getParameter(<span class="string">"name"</span>);
+name = <span class="keyword">new</span> <span class="built_in">String</span>(name.getBytes(<span class="string">"ISO-8859-1"</span>),<span class="string">"UTF-8"</span>); <span class="comment">//方法1，推荐使用该方法</span>
+name = URLDecoder.decode(name,<span class="string">"UTF-8"</span>); <span class="comment">//方法2，该方法有可能会解析不了</span>
 </code></pre>
       
     </div>
