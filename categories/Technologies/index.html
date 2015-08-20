@@ -91,7 +91,7 @@
 						
 							<li><a href="/">主页</a></li>
 				        
-							<li><a href="/archives">所有文章</a></li>
+							<li><a href="/archives/Technologies">技术</a></li>
 				        
 							<li><a href="/categories/mine">随意</a></li>
 				        
@@ -172,7 +172,7 @@
 				
 					<li><a href="/">主页</a></li>
 		        
-					<li><a href="/archives">所有文章</a></li>
+					<li><a href="/archives/Technologies">技术</a></li>
 		        
 					<li><a href="/categories/mine">随意</a></li>
 		        
@@ -196,6 +196,777 @@
 	</div>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-unicomSend" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/20/unicomSend/" class="article-date">
+  	<time datetime="2015-08-20T09:09:03.939Z" itemprop="datePublished">Aug 20 2015</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/08/20/unicomSend/">通过SGIP协议给联通发送短信</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="说明">说明</h3>
+<ul>
+<li>该类实现了通过SGIP协议给联通发送短信的功能。相关Jar包自行准备。</li>
+<li>给联通发送短信需要去联通办理相关业务。这都是需要花钱的。而且联通的网关会将用户名密码与IP绑定，所有测试的时候需要给联通你的本机外网IP。</li>
+<li>转载须注明。</li>
+</ul>
+<h3 id="代码">代码</h3>
+<pre><code><span class="keyword">package</span> com.hexy.sendMsg;
+
+<span class="keyword">import</span> java.io.DataInputStream;
+<span class="keyword">import</span> java.io.DataOutputStream;
+<span class="keyword">import</span> java.io.IOException;
+<span class="keyword">import</span> java.io.InputStream;
+<span class="keyword">import</span> java.io.OutputStream;
+<span class="keyword">import</span> java.net.Socket;
+
+<span class="keyword">import</span> spApi.Bind;
+<span class="keyword">import</span> spApi.BindResp;
+<span class="keyword">import</span> spApi.SGIP_Command;
+<span class="keyword">import</span> spApi.SGIP_Exception;
+<span class="keyword">import</span> spApi.Submit;
+<span class="keyword">import</span> spApi.SubmitResp;
+<span class="keyword">import</span> spApi.Unbind;
+<span class="keyword">import</span> spApi.UnbindResp;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">sendUnicomMsg</span> </span>{
+
+    <span class="comment">// 联通网关IP</span>
+    <span class="keyword">private</span> String unicomIp = <span class="string">"127.0.0.1"</span>;
+    <span class="comment">// 联通网关端口号</span>
+    <span class="keyword">private</span> <span class="keyword">int</span> unicomPort = <span class="number">8808</span>;
+    <span class="comment">// 联通登陆用户名</span>
+    <span class="keyword">private</span> String loginName = <span class="string">""</span>;
+    <span class="comment">// 联通登陆密码</span>
+    <span class="keyword">private</span> String loginPsd = <span class="string">""</span>;
+    <span class="comment">// 节点ID</span>
+    <span class="keyword">private</span> <span class="keyword">long</span> nodeId;
+    <span class="comment">// 企业代码</span>
+    <span class="keyword">private</span> String cpId = <span class="string">""</span>;
+    <span class="comment">// 服务代码</span>
+    <span class="keyword">private</span> String serviceCode = <span class="string">""</span>;
+    <span class="comment">// 短信接入号</span>
+    <span class="keyword">private</span> String cpPhone = <span class="string">""</span>;
+    <span class="comment">// 付费号码</span>
+    <span class="keyword">private</span> String chargePhone = <span class="string">""</span>;
+
+    <span class="javadoc">/**
+     *<span class="javadoctag"> @Description</span>: 发送联通短信
+     *<span class="javadoctag"> @param</span>
+     *<span class="javadoctag"> @return</span> boolean
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">sendUnicomMsg</span>() {
+        <span class="keyword">int</span> submitResult = <span class="number">0</span>;
+        <span class="keyword">boolean</span> isSend = <span class="keyword">false</span>;
+        Socket so = <span class="keyword">null</span>;
+        OutputStream out = <span class="keyword">null</span>;
+        InputStream input = <span class="keyword">null</span>;
+        Bind command = <span class="keyword">null</span>;
+        SGIP_Command sgip = <span class="keyword">null</span>;
+        SGIP_Command tmp = <span class="keyword">null</span>;
+        <span class="keyword">try</span> {
+            sgip = <span class="keyword">new</span> SGIP_Command();
+            so = <span class="keyword">new</span> Socket(unicomIp, unicomPort);
+            out = <span class="keyword">new</span> DataOutputStream(so.getOutputStream());
+            input = <span class="keyword">new</span> DataInputStream(so.getInputStream());
+            command = <span class="keyword">new</span> Bind(nodeId,<span class="comment">// 节点ID</span>
+                    <span class="number">1</span>, <span class="comment">// login type</span>
+                    loginName,<span class="comment">// login name</span>
+                    loginPsd);<span class="comment">// login password</span>
+            <span class="keyword">int</span> loginResult = command.write(out);
+            <span class="keyword">if</span> (loginResult != <span class="number">0</span>) {
+                <span class="comment">// 登录错误</span>
+                <span class="keyword">return</span> <span class="keyword">false</span>;
+            } <span class="keyword">else</span> {
+                <span class="comment">// 登录成功</span>
+            }
+            tmp = sgip.read(input);<span class="comment">// 接收sgip消息</span>
+            BindResp resp = <span class="keyword">null</span>;
+            <span class="keyword">if</span> (sgip.getCommandID() == SGIP_Command.ID_SGIP_BIND_RESP) {
+                resp = (BindResp) tmp;<span class="comment">// 强制转换为bindresp</span>
+                resp.readbody();<span class="comment">// 对消息进行解包</span>
+                <span class="keyword">int</span> bindResult = resp.GetResult();
+                <span class="keyword">if</span> (bindResult == <span class="number">0</span>) {
+                    <span class="comment">// 信息解包成功</span>
+                } <span class="keyword">else</span> {
+                    <span class="comment">// 信息解包失败</span>
+                    <span class="keyword">return</span> <span class="keyword">false</span>;
+                }
+            }
+
+            <span class="comment">// 开始发送短信</span>
+            submitResult = submit(<span class="string">"15611111111"</span>, <span class="string">"短信内容"</span>, out, input, sgip);
+
+            <span class="keyword">if</span> (submitResult == <span class="number">0</span>) {
+                <span class="comment">// 发送成功</span>
+                isSend = <span class="keyword">true</span>;
+            } <span class="keyword">else</span> {
+                <span class="comment">// 发送失败</span>
+            }
+
+            Unbind term = <span class="keyword">null</span>;
+            UnbindResp Unresp = <span class="keyword">null</span>;
+            term = <span class="keyword">new</span> Unbind(nodeId);
+            term.write(out);<span class="comment">// 给联通发送退出请求</span>
+            tmp = sgip.read(input);
+            <span class="keyword">if</span> (sgip.getCommandID() == SGIP_Command.ID_SGIP_UNBIND_RESP) {
+                Unresp = (UnbindResp) tmp;
+                <span class="keyword">int</span> unbindFlag = Unresp.GetFlag();
+                <span class="comment">// 退出的标志</span>
+                System.out.println(unbindFlag);
+            }
+            input.close();
+            out.close();
+            so.close();
+        } <span class="keyword">catch</span> (SGIP_Exception e) {
+            System.out.println(<span class="string">"短信发送失败，SGIP_Exception异常："</span> + e);
+        } <span class="keyword">catch</span> (Exception e) {
+            System.out.println(<span class="string">"短信发送失败 ，Exception： "</span> + e);
+        } <span class="keyword">finally</span> {
+            <span class="keyword">try</span> {
+                <span class="keyword">if</span> (input != <span class="keyword">null</span>) {
+                    input.close();
+                }
+                <span class="keyword">if</span> (out != <span class="keyword">null</span>) {
+                    out.close();
+                }
+                <span class="keyword">if</span> (so != <span class="keyword">null</span>) {
+                    so.close();
+                }
+            } <span class="keyword">catch</span> (IOException e) {
+                System.out
+                        .println(<span class="string">"Finally IOException, exception info : "</span> + e);
+            }
+        }
+        <span class="keyword">return</span> isSend;
+    }
+
+    <span class="javadoc">/**
+     *<span class="javadoctag"> @Description</span>: 提交短信至联通网关
+     *<span class="javadoctag"> @param</span>
+     *<span class="javadoctag"> @return</span> boolean
+     */</span>
+    <span class="keyword">public</span> <span class="keyword">int</span> <span class="title">submit</span>(String phoneNum, String msg, OutputStream out,
+            InputStream input, SGIP_Command sgip) {
+        <span class="keyword">int</span> submitResult = -<span class="number">1</span>;
+        SGIP_Command tmp = <span class="keyword">null</span>;
+        Submit submit = <span class="keyword">null</span>;
+        SubmitResp submitresp = <span class="keyword">null</span>;
+        <span class="keyword">try</span> {
+            submit = <span class="keyword">new</span> Submit(nodeId,<span class="comment">// node id同上</span>
+                    cpPhone,<span class="comment">// cp_phone</span>
+                    chargePhone,<span class="comment">// 付费号码</span>
+                    <span class="number">1</span>,<span class="comment">// 接收短消息的手机数</span>
+                    phoneNum,<span class="comment">//</span>
+                    cpId,<span class="comment">// cp_id</span>
+                    serviceCode,<span class="comment">// 业务代码</span>
+                    <span class="number">0</span>,<span class="comment">// 计费类型</span>
+                    <span class="string">"1"</span>,<span class="comment">// 短消息收费值</span>
+                    <span class="string">"0"</span>,<span class="comment">// 赠送话费</span>
+                    <span class="number">1</span>,<span class="comment">// 代收标志</span>
+                    <span class="number">8</span>,<span class="comment">// 引起MT的原因</span>
+                    <span class="number">9</span>,<span class="comment">// 优先级</span>
+                    <span class="string">""</span>,<span class="comment">// 短消息终止时间</span>
+                    <span class="string">""</span>,<span class="comment">// 011125120000032+短消息定时发送时间</span>
+                    <span class="number">1</span>,<span class="comment">// 状态报告标志</span>
+                    <span class="number">0</span>,<span class="comment">// GSM协议类型</span>
+                    <span class="number">0</span>,<span class="comment">// GSM协议类型</span>
+                    <span class="number">15</span>,<span class="comment">// 短消息编码格式 GBK</span>
+                    <span class="number">0</span>,<span class="comment">// 信息类型</span>
+                    msg.length(),<span class="comment">// 短消息长度</span>
+                    msg);<span class="comment">// 短消息内容</span>
+            submit.write(out);<span class="comment">// 发送submit</span>
+            tmp = sgip.read(input);
+            <span class="keyword">if</span> (tmp.getCommandID() == SGIP_Command.ID_SGIP_SUBMIT_RESP) {
+                submitresp = (SubmitResp) tmp;<span class="comment">// 强制转换</span>
+                submitresp.readbody();<span class="comment">// 解包</span>
+                <span class="keyword">int</span> seqNum = submitresp.getSeqno_2();
+                submitResult = submitresp.getResult();
+            }
+        } <span class="keyword">catch</span> (SGIP_Exception e) {
+            System.out.println(<span class="string">"SGIP_Exception, exception info = "</span> + e);
+        } <span class="keyword">catch</span> (IOException e) {
+            System.out.println(<span class="string">"IOException, exception info = "</span> + e);
+        } <span class="keyword">catch</span> (Exception e) {
+            System.out.println(<span class="string">"Exception, exception info = "</span> + e);
+        }
+        <span class="keyword">return</span> submitResult;
+    }
+
+}
+</code></pre>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/unicom-短信-联通短信发送-SGIP协议/">unicom,短信,联通短信发送,SGIP协议</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+  
+    <article id="post-SpringMvc" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/20/SpringMvc/" class="article-date">
+  	<time datetime="2015-08-20T09:08:56.721Z" itemprop="datePublished">Aug 20 2015</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/08/20/SpringMvc/">SpringMvc+Mybatis+Mysql+Maven+Velocity+tomcat 搭建Web环境</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="准备工作">准备工作</h3>
+<p>Eclipse，Maven插件,Tomcat</p>
+<h3 id="新建Maven工程">新建Maven工程</h3>
+<p><img src="http://i.imgur.com/RZ49G7O.png" alt=""></p>
+<p>选择自己的workspace<br><img src="http://i.imgur.com/SWAcby0.png" alt=""></p>
+<p>这里可能得等一会才会出现列表内容，我选择的是下面这项<br><img src="http://i.imgur.com/yntl2oq.png" alt=""></p>
+<p>我本地需要等较长时间才会出来这个页面，然后输入工程名字，包名字等内容<br><img src="http://i.imgur.com/524ooow.png" alt=""></p>
+<p>完成的工程目录应该是这样的<br><img src="http://i.imgur.com/q1iOZxf.png" alt=""></p>
+<p>接着需要再完成一些配置：<br>增加JRE和ServerRunTime的library<br><img src="http://i.imgur.com/X7Ms16x.png" alt=""></p>
+<p>增加sourceFolder,properties-&gt;java build path-&gt;source-&gt;add folder-&gt;create new folder-&gt;输入src/main/java。如果在src/main下已经有了java文件夹，跳过此步骤。<br><img src="http://i.imgur.com/8C5F0nj.png" alt=""></p>
+<p>将Maven工程变为Web工程<br><img src="http://i.imgur.com/TFdFjxa.png" alt=""><br><img src="http://i.imgur.com/hTDLIEJ.png" alt=""></p>
+<p>配置发布目录，将其配置为如图所示，多余的删除，缺失的就ADD<br><img src="http://i.imgur.com/HhR4sW9.png" alt=""></p>
+<p>到目前为止，Maven算是配好了</p>
+<h3 id="集成SpringMvc">集成SpringMvc</h3>
+<p>Maven是通过pom.xml管理Jar包的，因此需要将SpringMvc的Jar引入。<br>我的pom.xml如下,可以直接拷贝过去，必须的Jar都已经引用了。    </p>
+<pre><code><span class="tag">&lt;<span class="title">project</span> <span class="attribute">xmlns</span>=<span class="value">"http://maven.apache.org/POM/4.0.0"</span> <span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span>
+<span class="attribute">xsi:schemaLocation</span>=<span class="value">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="title">modelVersion</span>&gt;</span>
+<span class="tag">&lt;<span class="title">groupId</span>&gt;</span>web<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+<span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>webx<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+<span class="tag">&lt;<span class="title">packaging</span>&gt;</span>war<span class="tag">&lt;/<span class="title">packaging</span>&gt;</span>
+<span class="tag">&lt;<span class="title">version</span>&gt;</span>0.0.1-SNAPSHOT<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+<span class="tag">&lt;<span class="title">name</span>&gt;</span>webx Maven Webapp<span class="tag">&lt;/<span class="title">name</span>&gt;</span>
+<span class="tag">&lt;<span class="title">url</span>&gt;</span>http://maven.apache.org<span class="tag">&lt;/<span class="title">url</span>&gt;</span>
+<span class="tag">&lt;<span class="title">properties</span>&gt;</span>
+    <span class="comment">&lt;!-- spring版本号 --&gt;</span>
+    <span class="tag">&lt;<span class="title">spring.version</span>&gt;</span>3.2.4.RELEASE<span class="tag">&lt;/<span class="title">spring.version</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">org.aspectj.version</span>&gt;</span>1.7.3<span class="tag">&lt;/<span class="title">org.aspectj.version</span>&gt;</span>
+    <span class="comment">&lt;!-- mybatis版本号 --&gt;</span>
+    <span class="tag">&lt;<span class="title">mybatis.version</span>&gt;</span>3.2.4<span class="tag">&lt;/<span class="title">mybatis.version</span>&gt;</span>
+    <span class="comment">&lt;!-- log4j日志文件管理包版本 --&gt;</span>
+    <span class="tag">&lt;<span class="title">slf4j.version</span>&gt;</span>1.6.6<span class="tag">&lt;/<span class="title">slf4j.version</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">log4j.version</span>&gt;</span>1.2.12<span class="tag">&lt;/<span class="title">log4j.version</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">properties</span>&gt;</span>
+<span class="tag">&lt;<span class="title">dependencies</span>&gt;</span>
+    <span class="comment">&lt;!-- spring核心包 --&gt;</span>
+    <span class="comment">&lt;!-- springframe start --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-core<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-web<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-oxm<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-tx<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-jdbc<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-webmvc<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-aop<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-context-support<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${spring.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.aspectj<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>aspectjweaver<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${org.aspectj.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.aspectj<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>aspectjrt<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${org.aspectj.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.2.2<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>cglib<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>cglib-nodep<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.2.2<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- springframe end --&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>commons-lang3<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>3.1<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>commons-dbcp<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>commons-dbcp<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.4<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="comment">&lt;!-- mybatis核心包 --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.mybatis<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>mybatis<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${mybatis.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- mybatis/spring包 --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.mybatis<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>mybatis-spring<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.2.2<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- mysql驱动包 --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>mysql<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>mysql-connector-java<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>5.1.29<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- junit测试包 --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>4.11<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="title">scope</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- json数据 --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>net.sf.json-lib<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>json-lib<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.2.3<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">classifier</span>&gt;</span>jdk15<span class="tag">&lt;/<span class="title">classifier</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>commons-lang<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>commons-lang<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.6<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>javax.servlet<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>jstl<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.2<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>javax.servlet<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>servlet-api<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.5<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.apache.velocity<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>velocity<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.7<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.apache.velocity<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>velocity-tools<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.0<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+
+    <span class="comment">&lt;!-- 日志文件管理包 --&gt;</span>
+    <span class="comment">&lt;!-- log start --&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>log4j<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>log4j<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${log4j.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${slf4j.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>slf4j-log4j12<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">version</span>&gt;</span>${slf4j.version}<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
+    <span class="comment">&lt;!-- log end --&gt;</span>
+<span class="tag">&lt;/<span class="title">dependencies</span>&gt;</span>
+<span class="tag">&lt;<span class="title">build</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">finalName</span>&gt;</span>webx<span class="tag">&lt;/<span class="title">finalName</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">plugins</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">plugin</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">version</span>&gt;</span>2.5.1<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">configuration</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">source</span>&gt;</span>1.6<span class="tag">&lt;/<span class="title">source</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">target</span>&gt;</span>1.6<span class="tag">&lt;/<span class="title">target</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">optimize</span>&gt;</span>true<span class="tag">&lt;/<span class="title">optimize</span>&gt;</span>
+                <span class="comment">&lt;!--由于win7中文系统默认GBK so会报 编码GBK的不可映射字符 的错 需要在该处增加配置 --&gt;</span>
+                <span class="tag">&lt;<span class="title">encoding</span>&gt;</span>utf-8<span class="tag">&lt;/<span class="title">encoding</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">configuration</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">plugin</span>&gt;</span>
+        <span class="comment">&lt;!-- Run the application using "mvn jetty:run" --&gt;</span>
+        <span class="tag">&lt;<span class="title">plugin</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.mortbay.jetty<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>maven-jetty-plugin<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">version</span>&gt;</span>6.1.16<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">configuration</span>&gt;</span>
+                <span class="comment">&lt;!-- Log to the console. --&gt;</span>
+                <span class="tag">&lt;<span class="title">requestLog</span> <span class="attribute">implementation</span>=<span class="value">"org.mortbay.jetty.NCSARequestLog"</span>&gt;</span>
+                    <span class="comment">&lt;!-- This doesn't do anything for Jetty, but is a workaround for a 
+                        Maven bug that prevents the requestLog from being set. --&gt;</span>
+                    <span class="tag">&lt;<span class="title">append</span>&gt;</span>true<span class="tag">&lt;/<span class="title">append</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">requestLog</span>&gt;</span>
+                <span class="tag">&lt;<span class="title">connectors</span>&gt;</span>
+                    <span class="tag">&lt;<span class="title">connector</span> <span class="attribute">implementation</span>=<span class="value">"org.mortbay.jetty.nio.SelectChannelConnector"</span>&gt;</span>
+                        <span class="tag">&lt;<span class="title">port</span>&gt;</span>9090<span class="tag">&lt;/<span class="title">port</span>&gt;</span>
+                    <span class="tag">&lt;/<span class="title">connector</span>&gt;</span>
+                <span class="tag">&lt;/<span class="title">connectors</span>&gt;</span>
+            <span class="tag">&lt;/<span class="title">configuration</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">plugin</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">plugins</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">build</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">project</span>&gt;</span>
+</code></pre><p>还需要在resource目录下增加<code>applicationContext.xml</code>，配置SpingMvc的一些属性，内容如下：  </p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">beans</span> <span class="attribute">xmlns</span>=<span class="value">"http://www.springframework.org/schema/beans"</span>
+<span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attribute">xmlns:aop</span>=<span class="value">"http://www.springframework.org/schema/aop"</span>
+<span class="attribute">xmlns:tx</span>=<span class="value">"http://www.springframework.org/schema/tx"</span> <span class="attribute">xmlns:jdbc</span>=<span class="value">"http://www.springframework.org/schema/jdbc"</span>
+<span class="attribute">xmlns:context</span>=<span class="value">"http://www.springframework.org/schema/context"</span>
+<span class="attribute">xmlns:task</span>=<span class="value">"http://www.springframework.org/schema/task"</span>
+<span class="attribute">xsi:schemaLocation</span>=<span class="value">"http://www.springframework.org/schema/context
+             http://www.springframework.org/schema/context/spring-context-3.0.xsd
+             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+             http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">task:annotation-driven</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"basePropertyPlaceHolder"</span>
+    <span class="attribute">class</span>=<span class="value">"org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"</span>
+    <span class="attribute">lazy-init</span>=<span class="value">"true"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"systemPropertiesModeName"</span> <span class="attribute">value</span>=<span class="value">"SYSTEM_PROPERTIES_MODE_OVERRIDE"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"ignoreResourceNotFound"</span> <span class="attribute">value</span>=<span class="value">"true"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"locations"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">list</span>&gt;</span>
+            <span class="tag">&lt;<span class="title">value</span>&gt;</span>classpath*:jdbc.properties<span class="tag">&lt;/<span class="title">value</span>&gt;</span>
+        <span class="tag">&lt;/<span class="title">list</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">property</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+
+<span class="comment">&lt;!-- mysql configuration --&gt;</span>
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"baseDataSource"</span> <span class="attribute">class</span>=<span class="value">"org.apache.commons.dbcp.BasicDataSource"</span>
+    <span class="attribute">destroy-method</span>=<span class="value">"close"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"driverClassName"</span> <span class="attribute">value</span>=<span class="value">"${mysql.driverClassName}"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"url"</span> <span class="attribute">value</span>=<span class="value">"${mysql.url}"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"username"</span> <span class="attribute">value</span>=<span class="value">"${mysql.username}"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"password"</span> <span class="attribute">value</span>=<span class="value">"${mysql.password}"</span> /&gt;</span>
+<span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+<span class="comment">&lt;!-- transaction manager, use JtaTransactionManager for global tx --&gt;</span>
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"transactionManager"</span>
+    <span class="attribute">class</span>=<span class="value">"org.springframework.jdbc.datasource.DataSourceTransactionManager"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"dataSource"</span> <span class="attribute">ref</span>=<span class="value">"baseDataSource"</span> /&gt;</span>
+<span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+<span class="comment">&lt;!-- enable component scanning (beware that this does not enable mapper 
+    scanning!) --&gt;</span>
+<span class="tag">&lt;<span class="title">context:component-scan</span> <span class="attribute">base-package</span>=<span class="value">"com.he.webx.service"</span> /&gt;</span>
+
+<span class="comment">&lt;!-- enable autowire --&gt;</span>
+<span class="tag">&lt;<span class="title">context:annotation-config</span> /&gt;</span>
+
+<span class="comment">&lt;!-- enable transaction demarcation with annotations --&gt;</span>
+<span class="tag">&lt;<span class="title">tx:annotation-driven</span> /&gt;</span>
+
+<span class="comment">&lt;!-- define the SqlSessionFactory --&gt;</span>
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"sqlSessionFactoryUser"</span> <span class="attribute">class</span>=<span class="value">"org.mybatis.spring.SqlSessionFactoryBean"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"dataSource"</span> <span class="attribute">ref</span>=<span class="value">"baseDataSource"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"configLocation"</span> <span class="attribute">value</span>=<span class="value">"classpath:mybatis-config.xml"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"typeAliasesPackage"</span> <span class="attribute">value</span>=<span class="value">"com.he.webx.domain"</span> /&gt;</span>
+<span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+<span class="comment">&lt;!-- scan for mappers and let them be autowired --&gt;</span>
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">class</span>=<span class="value">"org.mybatis.spring.mapper.MapperScannerConfigurer"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"basePackage"</span> <span class="attribute">value</span>=<span class="value">"com.he.webx.mapper"</span> /&gt;</span>
+<span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">beans</span>&gt;</span>
+</code></pre><p>Web.xml里面的配置为：</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="tag">&lt;<span class="title">web-app</span> <span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span>
+<span class="attribute">xmlns</span>=<span class="value">"http://java.sun.com/xml/ns/javaee"</span>
+<span class="attribute">xsi:schemaLocation</span>=<span class="value">"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"</span>
+<span class="attribute">id</span>=<span class="value">"WebApp_ID"</span> <span class="attribute">version</span>=<span class="value">"2.5"</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">welcome-file-list</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">welcome-file</span>&gt;</span>/<span class="tag">&lt;/<span class="title">welcome-file</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">welcome-file-list</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">listener</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">listener-class</span>&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="tag">&lt;/<span class="title">listener-class</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">listener</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">context-param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>contextConfigLocation<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>classpath:applicationContext*.xml<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">context-param</span>&gt;</span>
+
+<span class="comment">&lt;!-- Spring Controller Configuration --&gt;</span>
+<span class="tag">&lt;<span class="title">servlet</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">servlet-name</span>&gt;</span>spring-controller<span class="tag">&lt;/<span class="title">servlet-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">servlet-class</span>&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="tag">&lt;/<span class="title">servlet-class</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">init-param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>contextConfigLocation<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>classpath:controller-servlet.xml<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">init-param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">load-on-startup</span>&gt;</span>1<span class="tag">&lt;/<span class="title">load-on-startup</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">servlet</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">servlet-mapping</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">servlet-name</span>&gt;</span>spring-controller<span class="tag">&lt;/<span class="title">servlet-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">url-pattern</span>&gt;</span>/<span class="tag">&lt;/<span class="title">url-pattern</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">servlet-mapping</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">filter</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>encodingFilter<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-class</span>&gt;</span>org.springframework.web.filter.CharacterEncodingFilter<span class="tag">&lt;/<span class="title">filter-class</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">init-param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>encoding<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">init-param</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">init-param</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-name</span>&gt;</span>forceEncoding<span class="tag">&lt;/<span class="title">param-name</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">param-value</span>&gt;</span>true<span class="tag">&lt;/<span class="title">param-value</span>&gt;</span>
+    <span class="tag">&lt;/<span class="title">init-param</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter</span>&gt;</span>
+<span class="tag">&lt;<span class="title">filter-mapping</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">filter-name</span>&gt;</span>encodingFilter<span class="tag">&lt;/<span class="title">filter-name</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">url-pattern</span>&gt;</span>/*<span class="tag">&lt;/<span class="title">url-pattern</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">filter-mapping</span>&gt;</span>
+
+<span class="tag">&lt;<span class="title">error-page</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">error-code</span>&gt;</span>500<span class="tag">&lt;/<span class="title">error-code</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">location</span>&gt;</span>/error-page-500<span class="tag">&lt;/<span class="title">location</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">error-page</span>&gt;</span>
+<span class="tag">&lt;<span class="title">error-page</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">error-code</span>&gt;</span>403<span class="tag">&lt;/<span class="title">error-code</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">location</span>&gt;</span>/error-page-403<span class="tag">&lt;/<span class="title">location</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">error-page</span>&gt;</span>
+<span class="tag">&lt;<span class="title">error-page</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">error-code</span>&gt;</span>404<span class="tag">&lt;/<span class="title">error-code</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">location</span>&gt;</span>/error-page-404<span class="tag">&lt;/<span class="title">location</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">error-page</span>&gt;</span>
+<span class="tag">&lt;<span class="title">error-page</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">exception-type</span>&gt;</span>java.lang.Exception<span class="tag">&lt;/<span class="title">exception-type</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">location</span>&gt;</span>/exception-page<span class="tag">&lt;/<span class="title">location</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">error-page</span>&gt;</span>
+
+<span class="tag">&lt;/<span class="title">web-app</span>&gt;</span>
+</code></pre><h3 id="集成Mybatis">集成Mybatis</h3>
+<p>pom.xml里面需要增加Mybatis的jar包，都在上面的配置文件里面了<br>这里，需要在resource目录下增加<code>mybatis-config.xml</code>，这里配置Mybatis的一些配置项<br>配置如下：</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="doctype">&lt;!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd"&gt;</span>
+<span class="tag">&lt;<span class="title">configuration</span>&gt;</span>
+<span class="tag">&lt;<span class="title">settings</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"cacheEnabled"</span> <span class="attribute">value</span>=<span class="value">"true"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"lazyLoadingEnabled"</span> <span class="attribute">value</span>=<span class="value">"true"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"multipleResultSetsEnabled"</span> <span class="attribute">value</span>=<span class="value">"true"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"useColumnLabel"</span> <span class="attribute">value</span>=<span class="value">"true"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"useGeneratedKeys"</span> <span class="attribute">value</span>=<span class="value">"false"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"autoMappingBehavior"</span> <span class="attribute">value</span>=<span class="value">"PARTIAL"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"defaultExecutorType"</span> <span class="attribute">value</span>=<span class="value">"SIMPLE"</span> /&gt;</span> <span class="comment">&lt;!-- BATCH, REUSE --&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"defaultStatementTimeout"</span> <span class="attribute">value</span>=<span class="value">"25000"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"safeRowBoundsEnabled"</span> <span class="attribute">value</span>=<span class="value">"false"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"mapUnderscoreToCamelCase"</span> <span class="attribute">value</span>=<span class="value">"false"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"localCacheScope"</span> <span class="attribute">value</span>=<span class="value">"SESSION"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"jdbcTypeForNull"</span> <span class="attribute">value</span>=<span class="value">"OTHER"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">setting</span> <span class="attribute">name</span>=<span class="value">"lazyLoadTriggerMethods"</span> <span class="attribute">value</span>=<span class="value">"equals,clone,hashCode,toString"</span> /&gt;</span>
+<span class="tag">&lt;/<span class="title">settings</span>&gt;</span>
+
+<span class="comment">&lt;!-- 别名 --&gt;</span>
+<span class="tag">&lt;<span class="title">typeAliases</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">typeAliases</span>&gt;</span>
+
+
+
+<span class="tag">&lt;<span class="title">plugins</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">plugin</span> <span class="attribute">interceptor</span>=<span class="value">"com.he.webx.mapper.page.ResultSetInterceptor"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">plugin</span> <span class="attribute">interceptor</span>=<span class="value">"com.he.webx.mapper.page.PageInterceptor"</span>&gt;</span>
+        <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"dialect"</span> <span class="attribute">value</span>=<span class="value">"mysql"</span> /&gt;</span>
+    <span class="tag">&lt;/<span class="title">plugin</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">plugins</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">configuration</span>&gt;</span>    
+</code></pre><p>需要在resources里面增加<code>jdbc.properties</code>文件，存放数据库链接信息，写法如下：</p>
+<pre><code><span class="comment">#mysql</span>
+mysql.<span class="variable">driverClassName=</span>com.mysql.jdbc.Driver
+mysql.<span class="variable">url=</span>jdbc:mysql://localhost:<span class="number">3306</span>/webx
+mysql.<span class="variable">username=</span>root
+mysql.<span class="variable">password=</span><span class="number">123456</span>
+</code></pre><h3 id="集成Velocity">集成Velocity</h3>
+<p>在resources目录下增加<code>controller-servlet.xml</code>文件，配置SpringMvc以及Velocity的一些特性：</p>
+<p>controller-servlet.xml：</p>
+<pre><code><span class="pi">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="comment">&lt;!-- Bean头部 --&gt;</span>
+<span class="tag">&lt;<span class="title">beans</span> <span class="attribute">xmlns</span>=<span class="value">"http://www.springframework.org/schema/beans"</span>
+<span class="attribute">xmlns:xsi</span>=<span class="value">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attribute">xmlns:p</span>=<span class="value">"http://www.springframework.org/schema/p"</span>
+<span class="attribute">xmlns:mvc</span>=<span class="value">"http://www.springframework.org/schema/mvc"</span> <span class="attribute">xmlns:context</span>=<span class="value">"http://www.springframework.org/schema/context"</span>
+<span class="attribute">xmlns:util</span>=<span class="value">"http://www.springframework.org/schema/util"</span>
+<span class="attribute">xsi:schemaLocation</span>=<span class="value">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd              
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"</span>&gt;</span>
+
+<span class="comment">&lt;!-- 激活@Controller模式 --&gt;</span>
+<span class="tag">&lt;<span class="title">mvc:annotation-driven</span> /&gt;</span>
+
+<span class="comment">&lt;!-- 对包中的所有类进行扫描，以完成Bean创建和自动依赖注入的功能 需要更改 --&gt;</span>
+<span class="tag">&lt;<span class="title">context:component-scan</span> <span class="attribute">base-package</span>=<span class="value">"com.he.webx"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">class</span>=<span class="value">"org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"</span> /&gt;</span>
+
+<span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"velocityConfigurer"</span> <span class="attribute">class</span>=<span class="value">"org.springframework.web.servlet.view.velocity.VelocityConfigurer"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"resourceLoaderPath"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">value</span>&gt;</span>/WEB-INF/velocity/<span class="tag">&lt;/<span class="title">value</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">property</span>&gt;</span>
+<span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"velocityProperties"</span>&gt;</span>
+  <span class="tag">&lt;<span class="title">props</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">prop</span> <span class="attribute">key</span>=<span class="value">"input.encoding"</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="title">prop</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">prop</span> <span class="attribute">key</span>=<span class="value">"output.encoding"</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="title">prop</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">prop</span> <span class="attribute">key</span>=<span class="value">"contentType"</span>&gt;</span>text/html;charset=UTF-8<span class="tag">&lt;/<span class="title">prop</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">prop</span> <span class="attribute">key</span>=<span class="value">"velocimacro.library"</span>&gt;</span>common/macro/macro.vm,common/macro/page.vm<span class="tag">&lt;/<span class="title">prop</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">props</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">property</span>&gt;</span>
+  <span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+
+  <span class="tag">&lt;<span class="title">bean</span> <span class="attribute">id</span>=<span class="value">"viewResolver"</span> <span class="attribute">class</span>=<span class="value">"org.springframework.web.servlet.view.velocity.VelocityLayoutViewResolver"</span>&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"cache"</span> <span class="attribute">value</span>=<span class="value">"false"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"prefix"</span> <span class="attribute">value</span>=<span class="value">""</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"dateToolAttribute"</span> <span class="attribute">value</span>=<span class="value">"dateTool"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"numberToolAttribute"</span> <span class="attribute">value</span>=<span class="value">"numberTool"</span>/&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"contentType"</span> <span class="attribute">value</span>=<span class="value">"text/html;charset=UTF-8"</span> /&gt;</span>
+    <span class="tag">&lt;<span class="title">property</span> <span class="attribute">name</span>=<span class="value">"layoutUrl"</span> <span class="attribute">value</span>=<span class="value">"layout/default.vm"</span> /&gt;</span>
+  <span class="tag">&lt;/<span class="title">bean</span>&gt;</span>
+<span class="tag">&lt;/<span class="title">beans</span>&gt;</span>
+</code></pre><p>到这里呢，配置基本都完成了，剩下的就是写代码了，代码懒得贴，直接给出我的<a href="https://github.com/wshexy/blog" target="_blank" rel="external">Github</a>地址，去里面下吧。目前具有的功能有：注册，登录，文件编辑管理，分页等等。基本可以满足个人博客的需求。如果有时候我还是会更新的。<br>需要说明的是，CSS、Js以及一些插件是需要另外起一个Apache来放置的，资源地址为<a href="https://github.com/wshexy/blogresource" target="_blank" rel="external">Github</a>,插件引用的比较混乱，样式洗的也比较渣，只能凑着看了。</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Maven/">Maven</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mybatis/">Mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Mysql/">Mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SpringMvc/">SpringMvc</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Velocity/">Velocity</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tomcat/">tomcat</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
   
     <article id="post-URL乱码" class="article article-type-post" itemscope itemprop="blogPost">
   
