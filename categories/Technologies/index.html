@@ -115,7 +115,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Blob/" style="font-size: 10.00px;">Blob</a><a href="/tags/Maven/" style="font-size: 10.00px;">Maven</a><a href="/tags/Mybatis/" style="font-size: 20.00px;">Mybatis</a><a href="/tags/Mysql/" style="font-size: 10.00px;">Mysql</a><a href="/tags/SpringMvc/" style="font-size: 10.00px;">SpringMvc</a><a href="/tags/URL/" style="font-size: 10.00px;">URL</a><a href="/tags/Velocity/" style="font-size: 10.00px;">Velocity</a><a href="/tags/hexo/" style="font-size: 10.00px;">hexo</a><a href="/tags/setInterval/" style="font-size: 10.00px;">setInterval</a><a href="/tags/setTimeout/" style="font-size: 10.00px;">setTimeout</a><a href="/tags/tomcat/" style="font-size: 10.00px;">tomcat</a><a href="/tags/unicom-短信-联通短信发送-SGIP协议/" style="font-size: 10.00px;">unicom,短信,联通短信发送,SGIP协议</a><a href="/tags/中文/" style="font-size: 10.00px;">中文</a><a href="/tags/乱码/" style="font-size: 10.00px;">乱码</a>
+						<a href="/tags/Blob/" style="font-size: 10.00px;">Blob</a><a href="/tags/Maven/" style="font-size: 10.00px;">Maven</a><a href="/tags/Mybatis/" style="font-size: 20.00px;">Mybatis</a><a href="/tags/Mysql/" style="font-size: 10.00px;">Mysql</a><a href="/tags/SpringMvc/" style="font-size: 10.00px;">SpringMvc</a><a href="/tags/URL/" style="font-size: 10.00px;">URL</a><a href="/tags/Velocity/" style="font-size: 10.00px;">Velocity</a><a href="/tags/hexo/" style="font-size: 10.00px;">hexo</a><a href="/tags/setInterval/" style="font-size: 10.00px;">setInterval</a><a href="/tags/setTimeout/" style="font-size: 10.00px;">setTimeout</a><a href="/tags/tomcat/" style="font-size: 10.00px;">tomcat</a><a href="/tags/unicom-短信-联通短信发送-SGIP协议/" style="font-size: 10.00px;">unicom,短信,联通短信发送,SGIP协议</a><a href="/tags/中文/" style="font-size: 10.00px;">中文</a><a href="/tags/乱码/" style="font-size: 10.00px;">乱码</a><a href="/tags/邮件发送-mail/" style="font-size: 10.00px;">邮件发送,mail</a>
 					</div>
 				</section>
 				
@@ -196,6 +196,138 @@
 	</div>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-sendMail" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/21/sendMail/" class="article-date">
+  	<time datetime="2015-08-21T01:03:12.506Z" itemprop="datePublished">Aug 21 2015</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/08/21/sendMail/">邮件发送</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="说明">说明</h3>
+<ul>
+<li>一个简单的邮件发送例子，可以直接使用。</li>
+<li>转帖请注明。</li>
+</ul>
+<h3 id="代码">代码</h3>
+<pre><code><span class="keyword">package</span> com.hexy.sendMail;
+
+<span class="keyword">import</span> java.util.Date;
+<span class="keyword">import</span> java.util.Properties;
+
+<span class="keyword">import</span> javax.mail.Address;
+<span class="keyword">import</span> javax.mail.Authenticator;
+<span class="keyword">import</span> javax.mail.Message;
+<span class="keyword">import</span> javax.mail.PasswordAuthentication;
+<span class="keyword">import</span> javax.mail.Session;
+<span class="keyword">import</span> javax.mail.Transport;
+<span class="keyword">import</span> javax.mail.internet.InternetAddress;
+<span class="keyword">import</span> javax.mail.internet.MimeMessage;
+
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">sendMail</span> </span>{
+    <span class="comment">// 发送人邮件信息</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> String username = <span class="string">"zhangsan@qq.com"</span>;
+    <span class="keyword">private</span> <span class="keyword">static</span> String password = <span class="string">"123456"</span>;
+    <span class="comment">// 邮件服务器IP</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> String hostIp = <span class="string">"127.0.0.1"</span>;
+    <span class="comment">// 发送邮件服务器端口</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> String hostPort = <span class="string">"25"</span>;
+    <span class="comment">// 发送方式</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> String protocol = <span class="string">"smtp"</span>;
+    <span class="comment">//设置发件人别名</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> String nick = <span class="string">""</span>;
+
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(String[] args) <span class="keyword">throws</span> Exception {
+        String subject = <span class="string">"邮件标题"</span>;
+        String body = <span class="string">"邮件内容"</span>;
+
+        Properties props = System.getProperties();
+        <span class="comment">// 创建信件服务器</span>
+        props.put(<span class="string">"mail.smtp.host"</span>, hostIp);
+        props.put(<span class="string">"mail.smtp.auth"</span>, <span class="string">"true"</span>);
+        props.put(<span class="string">"mail.transport.protocol"</span>, protocol);
+        props.setProperty(<span class="string">"mail.smtp.port"</span>, hostPort);
+
+        <span class="comment">// SSL</span>
+        props.setProperty(<span class="string">"mail.smtp.socketFactory.class"</span>, <span class="string">""</span>); <span class="comment">// mail.smtp.socketFactory.class</span>
+        props.setProperty(<span class="string">"mail.smtp.socketFactory.fallback"</span>, <span class="string">""</span>); <span class="comment">// mail.smtp.socketFactory.fallback</span>
+        props.setProperty(<span class="string">"mail.smtp.socketFactory.port"</span>, hostPort);
+
+        <span class="comment">// 得到默认的对话对象</span>
+        Authenticator a = <span class="keyword">new</span> Authenticator() {
+            <span class="keyword">public</span> PasswordAuthentication <span class="title">getPasswordAuthentication</span>() {
+                <span class="keyword">return</span> <span class="keyword">new</span> PasswordAuthentication(username, password);
+            }
+        };
+        <span class="comment">// 创建Session实例</span>
+        Session session = Session.getDefaultInstance(props, a);
+        <span class="comment">// 创建MimeMessage实例对象</span>
+        Message msg = <span class="keyword">new</span> MimeMessage(session);
+        <span class="comment">// 设置发信人</span>
+        <span class="comment">// msg.setFrom(new InternetAddress(from));</span>
+        <span class="comment">// 设置自定义发件人昵称</span>
+        msg.setFrom(<span class="keyword">new</span> InternetAddress(username, nick));
+        <span class="comment">// 设置收信人</span>
+        msg.setRecipients(Message.RecipientType.TO, <span class="keyword">new</span> Address[] {
+                <span class="keyword">new</span> InternetAddress(<span class="string">"lisi@qq.com"</span>, <span class="string">"收件人1"</span>),
+                <span class="keyword">new</span> InternetAddress(<span class="string">"wangwu@qq.com"</span>, <span class="string">"收件人2"</span>) });
+        <span class="comment">// 设置发送日期</span>
+        msg.setSentDate(<span class="keyword">new</span> Date());
+        <span class="comment">// 设置邮件主题</span>
+        msg.setSubject(subject);
+        <span class="comment">// 设置邮件正文</span>
+        msg.setContent(body, <span class="string">"text/html;charset=gb2312"</span>);
+        Transport.send(msg);
+    }
+}
+</code></pre>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/邮件发送-mail/">邮件发送,mail</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/Technologies/">Technologies</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
   
     <article id="post-unicomSend" class="article article-type-post" itemscope itemprop="blogPost">
   
